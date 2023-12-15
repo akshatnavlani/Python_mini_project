@@ -48,7 +48,6 @@ def main():
 
     # Expense Module
     if st.session_state.authenticated:
-        st.header("Expense Module")
 
         # Add Expense Form
         with st.form("add_expense_form"):

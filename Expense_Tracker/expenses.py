@@ -7,7 +7,7 @@ def add_expenses(user_id, amount, description, date):
   
   try:
     cursor.execute("INSERT INTO expenses (user_id, amount, description, date) VALUES (?,?,?,?)",(user_id, amount, description, date))
-    conn.connect()
+    conn.commit()
     conn.close()
     return True, "Expense added successfully."
   except sqlite3.Error as e:
@@ -37,7 +37,7 @@ def view_expenses(user_id):
 #Function to MODIFY expenses
 def modify_expenses(expense_id, amount,description,date):
   conn=sqlite3.connect("user_data.db")
-  cursor=conn.connect()
+  cursor=conn.cursor()
   
   try:
     cursor.execute("UPDATE expenses SET amount=?, description=?, date=? WHERE id=?",(amount, description, date, expense_id))    
