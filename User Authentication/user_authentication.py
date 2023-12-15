@@ -2,25 +2,32 @@ import streamlit as st
 import sqlite3
 import base64
 
+# Global variable to track if user data has been created
+user_data_initialized = False
+
 # Function to create or load user data
 def create_user_data():
-    conn = sqlite3.connect('user_data.db')
-    cursor = conn.cursor()
+    global user_data_initialized
     
-    try:
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT,
-                password TEXT
-            )
-        ''')
-        print("Table 'users' created successfully.")
-    except sqlite3.Error as e:
-        print("Error creating 'users' table:", e)
+    if not user_data_initialized:
+        conn = sqlite3.connect('user_data.db')
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT,
+                    password TEXT
+                )
+            ''')
+            print("Table 'users' created successfully.")
+            user_data_initialized = True
+        except sqlite3.Error as e:
+            print("Error creating 'users' table:", e)
 
-    conn.commit()
-    conn.close()
+        conn.commit()
+        conn.close()
 
 # Function to encode a password using base64
 def encode_password(password):
