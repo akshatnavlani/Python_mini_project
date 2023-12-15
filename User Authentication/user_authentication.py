@@ -10,11 +10,12 @@ def create_user_data():
     global user_data_initialized
     
     if not user_data_initialized:
-        conn = sqlite3.connect('user_data.db')
-        cursor = conn.cursor()
+        # Create a connection and cursor for the 'users' table
+        conn_users = sqlite3.connect('user_data.db')
+        cursor_users = conn_users.cursor()
         
         try:
-            cursor.execute('''
+            cursor_users.execute('''
                 CREATE TABLE IF NOT EXISTS users (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT,
@@ -26,8 +27,31 @@ def create_user_data():
         except sqlite3.Error as e:
             print("Error creating 'users' table:", e)
 
-        conn.commit()
-        conn.close()
+        conn_users.commit()
+        conn_users.close()
+        
+        # Create a new connection and cursor for the 'expenses' table
+        conn_expenses = sqlite3.connect('user_data.db')
+        cursor_expenses = conn_expenses.cursor()
+        
+        try:
+            cursor_expenses.execute('''
+                CREATE TABLE IF NOT EXISTS expenses (
+                  id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  user_id INTEGER,
+                  amount REAL,
+                  description TEXT,
+                  date TEXT,
+                  FOREIGN KEY (user_id) REFERENCES users(id)
+                )
+            ''')
+            print("Table 'expenses' created successfully.")
+            user_data_initialized = True
+        except sqlite3.Error as e:
+            print("Error creating 'expenses' table:", e)
+
+        conn_expenses.commit()
+        conn_expenses.close()
 
 # Function to encode a password using base64
 def encode_password(password):
@@ -37,7 +61,7 @@ def encode_password(password):
 def sign_up(username, password):
     conn = sqlite3.connect('user_data.db')
     cursor = conn.cursor()
-    
+    print("whooooooo")
     cursor.execute("SELECT * FROM users WHERE username=?", (username,))
     existing_user = cursor.fetchone()
     
@@ -51,9 +75,11 @@ def sign_up(username, password):
             cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, encoded_password))
             conn.commit()
             conn.close()
+            print("Sign up successful. You can now log in.")
             return True, "Sign up successful. You can now log in."
         except sqlite3.Error as e:
             conn.close()
+            print("Error during signup:", e)
             return False, "Error during signup. Please try again."
 
 # Function to verify a password using base64
@@ -72,58 +98,14 @@ def log_in(username, password):
     if user_data:
         if verify_password(password, user_data[2]):
             conn.close()
-            return True, "Login successful."
+            return True, user_data[0], "Login successful."
         else:
             conn.close()
-            return False, "Incorrect password. Please try again."
+            return False, user_data[0], "Incorrect password. Please try again."
     else:
         conn.close()
-        return False, "Username not found. Please sign up."
+        return False, user_data[0], "Username not found. Please sign up."
 
-# Main function
-def main():
-    st.title("Expense Tracker App")
 
-    # Create or load user data
-    create_user_data()
-
-    # Initialize 'authenticated' attribute in the session state
-    if 'authenticated' not in st.session_state:
-        st.session_state.authenticated = False
-
-    # Sidebar for user authentication
-    st.sidebar.header("User Authentication")
-
-    # Sign Up Form
-    with st.sidebar.form("sign_up_form"):
-        st.write("### Sign Up")
-        new_username = st.text_input("New Username:")
-        new_password = st.text_input("New Password:", type="password", key="signup_password")
-
-        if st.form_submit_button("Sign Up"):
-            success, message = sign_up(new_username, new_password)
-            if success:
-                st.session_state.authenticated = True
-                st.success(message)
-            else:
-                st.error(message)
-
-    # Log In Form
-    with st.sidebar.form("log_in_form"):
-        st.write("### Log In")
-        username = st.text_input("Username:")
-        password = st.text_input("Password:", type="password")
-
-        if st.form_submit_button("Log In"):
-            success, message = log_in(username, password)
-            if success:
-                st.session_state.authenticated = True
-                st.success(message)
-            else:
-                st.error(message)
-
-# Run the app
-if __name__ == "__main__":
-    main()
 
 
