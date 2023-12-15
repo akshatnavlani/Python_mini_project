@@ -12,7 +12,7 @@ def main():
     if 'authenticated' not in st.session_state:
         st.session_state.authenticated = False
     if 'user_id' not in st.session_state:
-        st.session_state.user_id = None 
+        st.session_state.user_id = None  # Initialize user_id as None
 
     # Sidebar for user authentication
     st.sidebar.header("User Authentication")
@@ -41,13 +41,13 @@ def main():
         if st.form_submit_button("Sign Up"):
             success, message = sign_up(new_username, new_password)
             if success:
-                # st.session_state.authenticated = True
+                st.session_state.authenticated = True
                 st.success(message)
             else:
                 st.error(message)
 
-    # Expense Module
-    if st.session_state.authenticated:
+    # Expense Module (Conditional on Authentication and Successful Login)
+    if st.session_state.authenticated and st.session_state.user_id is not None:
         st.header("Expense Module")
 
         # Add Expense Form
@@ -65,12 +65,11 @@ def main():
                     st.error(message)
 
         # View Expenses
-        if st.button("View Expenses"):
-            expenses = view_expenses(st.session_state.user_id)
-            if expenses:
-                st.header("View Expenses")
-                for expense in expenses:
-                    st.write(f"Expense ID: {expense[0]}, Amount: {expense[2]}, Description: {expense[3]}, Date: {expense[4]}")
+        expenses = view_expenses(st.session_state.user_id)
+        if expenses:
+            st.header("View Expenses")
+            for expense in expenses:
+                st.write(f"Expense ID: {expense[0]}, Amount: {expense[2]}, Description: {expense[3]}, Date: {expense[4]}")
 
         # Modify Expense Form
         with st.form("modify_expense_form"):
