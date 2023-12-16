@@ -7,51 +7,44 @@ user_data_initialized = False
 
 # Function to create or load user data
 def create_user_data():
-    global user_data_initialized
-    
-    if not user_data_initialized:
-        # Create a connection and cursor for the 'users' table
-        conn_users = sqlite3.connect('user_data.db')
-        cursor_users = conn_users.cursor()
-        
-        try:
-            cursor_users.execute('''
-                CREATE TABLE IF NOT EXISTS users (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    username TEXT,
-                    password TEXT
-                )
-            ''')
-            print("Table 'users' created successfully.")
-            user_data_initialized = True
-        except sqlite3.Error as e:
-            print("Error creating 'users' table:", e)
+    user_data_initialized = False
 
-        conn_users.commit()
-        conn_users.close()
-        
-        # Create a new connection and cursor for the 'expenses' table
-        conn_expenses = sqlite3.connect('user_data.db')
-        cursor_expenses = conn_expenses.cursor()
-        
-        try:
-            cursor_expenses.execute('''
-                CREATE TABLE IF NOT EXISTS expenses (
-                  id INTEGER PRIMARY KEY AUTOINCREMENT,
-                  user_id INTEGER,
-                  amount REAL,
-                  description TEXT,
-                  date TEXT,
-                  FOREIGN KEY (user_id) REFERENCES users(id)
-                )
-            ''')
-            print("Table 'expenses' created successfully.")
-            user_data_initialized = True
-        except sqlite3.Error as e:
-            print("Error creating 'expenses' table:", e)
+    # Create or load user data
+    conn = sqlite3.connect('user_data.db')
+    cursor = conn.cursor()
 
-        conn_expenses.commit()
-        conn_expenses.close()
+    try:
+        # Create 'users' table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT,
+                password TEXT
+            )
+        ''')
+        print("Table 'users' created successfully.")
+
+        # Create 'expenses' table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS expenses (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                amount REAL,
+                description TEXT,
+                date TEXT,
+                category TEXT,  -- Add the 'category' column
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+        ''')
+        print("Table 'expenses' created successfully.")
+
+        user_data_initialized = True
+    except sqlite3.Error as e:
+        print("Error creating tables:", e)
+
+    conn.commit()
+    conn.close()
+
 
 # Function to encode a password using base64
 def encode_password(password):
@@ -104,8 +97,7 @@ def log_in(username, password):
             return False, user_data[0], "Incorrect password. Please try again."
     else:
         conn.close()
-        return False, user_data[0], "Username not found. Please sign up."
-
+        return False, None, "Username not found. Please sign up."
 
 
 
