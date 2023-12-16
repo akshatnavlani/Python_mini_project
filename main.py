@@ -55,7 +55,7 @@ def main():
             amount = st.number_input("Amount:",step=50)
             description = st.text_input("Description:")
             date = st.date_input("Date:")
-            category = st.text_input("Category:")  # Add a field for category
+            category = st.selectbox("Category:",("Education","Travel", "Food", "Entertainment", "Other"))  # Add a field for category
 
             if st.form_submit_button("Add Expense"):
                 success, message = add_expenses(st.session_state.user_id, amount, description, date, category)
