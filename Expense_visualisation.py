@@ -41,22 +41,15 @@ result_amount = df[mask].shape[0]
 st.markdown(f'*Available results: {result_amount}*')
 
 #Grouping the dataframe
-df_income_grouped = df[mask].groupby(by=['income'])
-df_expense_grouped = df[mask].groupby(by=['expense'])
+df_amount_grouped = df[mask].groupby(by=['amount'])
 
 #Bar charts
-income_bar_chart = px.bar(df_income_grouped,
+amount_bar_chart = px.bar(df_amount_grouped,
                           x='date',
-                          y='income',
-                          text='Income vs Time',
-                          color_discrete_sequence=['#08653f'],
-                          template='plotly_white')
-
-expense_bar_chart = px.bar(df_expense_grouped,
-                          x='date',
-                          y='expense',
+                          y='amount',
                           text='Expense vs Time',
                           color_discrete_sequence=['#08653f'],
                           template='plotly_white')
+
 
 
