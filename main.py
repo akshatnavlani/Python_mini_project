@@ -52,10 +52,10 @@ def main():
         # Add Expense Form
         with st.form("add_expense_form"):
             st.write("### Add Expense")
-            amount = st.number_input("Amount:")
+            amount = st.number_input("Amount:",step=50)
             description = st.text_input("Description:")
             date = st.date_input("Date:")
-            category = st.text_input("Category:")  # Add a field for category
+            category = st.selectbox("Category:",("Education","Travel", "Food", "Entertainment", "Other"))  # Add a field for category
 
             if st.form_submit_button("Add Expense"):
                 success, message = add_expenses(st.session_state.user_id, amount, description, date, category)

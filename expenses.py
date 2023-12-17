@@ -24,9 +24,9 @@ def view_expenses(user_id, date=None):
     cursor = conn.cursor()
 
     if date:
-        cursor.execute("SELECT id, user_id, expenses, description, date, category FROM expenses WHERE user_id=? AND date=?", (user_id, date))
+        cursor.execute("SELECT id, user_id, amount, description, date, category FROM expenses WHERE user_id=? AND date=?", (user_id, date))
     else:
-        cursor.execute("SELECT id, user_id, expenses, description, date, category FROM expenses WHERE user_id=?", (user_id,))
+        cursor.execute("SELECT id, user_id, amount, description, date, category FROM expenses WHERE user_id=?", (user_id,))
 
     expenses = cursor.fetchall()
     conn.close()
