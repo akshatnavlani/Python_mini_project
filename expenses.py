@@ -3,13 +3,13 @@ import pandas as pd
 import streamlit as st
 
 # Function to ADD expenses
-def add_expenses(user_id, expenses, description, date, category):
+def add_expenses(user_id, amount, description, date, category):
     conn = sqlite3.connect('user_data.db')
     cursor = conn.cursor()
 
     try:
-        cursor.execute("INSERT INTO expenses (user_id, income, expenses, description, date, category) VALUES (?,?,?,?,?)",
-                       (user_id, expenses, description, date, category))
+        cursor.execute("INSERT INTO expenses (user_id, amount, description, date, category) VALUES (?,?,?,?,?)",
+                       (user_id, amount, description, date, category))
         conn.commit()
         conn.close()
         return True, "Expense added successfully."
