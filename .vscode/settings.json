@@ -1,0 +1,10 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "Data",
+            "database": "${workspaceFolder:Python_mini_project}/user_data.db"
+        }
+    ]
+}
