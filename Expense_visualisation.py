@@ -34,7 +34,6 @@ categories = df['category'].unique().tolist()
 reasons = df['reason'].unique().tolist()
 
 category_selection = st.multiselect('Category:',categories)
-reason_selection = st.multiselect('Reason:', reasons)
 
 #Date selection
 df['date'] = pd.to_datetime(df['date'])
@@ -43,7 +42,7 @@ df['date'] = df['date'].astype(float)
 
 date_selection = st.slider('Select start date', min_value=df['date'].min(), max_value=df['date'].max())
 
-mask = (df['date'].between(*date_selection)) & (df['category'].isin(category_selection)) & (df['reason'].isin(reason_selection))
+mask = (df['date'].between(*date_selection)) & (df['category'].isin(category_selection)) 
 result_amount = df[mask].shape[0]
 st.markdown(f'*Available results: {result_amount}*')
 
