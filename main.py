@@ -3,6 +3,7 @@ import sqlite3
 from passlib.hash import pbkdf2_sha256
 import functions
 import categories
+import view_delete
 # Create a connection to the SQLite database
 conn = sqlite3.connect("expense_db.db")
 cursor = conn.cursor()
@@ -15,6 +16,22 @@ cursor.execute('''
         password TEXT
     )
 ''')
+conn.commit()
+
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS expenses (
+        transaction_id TEXT PRIMARY KEY,
+        username TEXT,
+        amount REAL,
+        date TEXT,
+        reason TEXT,
+        category TEXT,
+        label TEXT,
+        FOREIGN KEY (username) REFERENCES users(username)
+    )
+''')
+
+
 conn.commit()
 
 # Initialize session_state
@@ -69,18 +86,22 @@ if st.session_state.username and not st.session_state.show_signup:
 
 
 #--------------------------------APP CONTENT------------------------------------
-        page = st.sidebar.radio("Select a page", ["Home", "Add Transaction", "Page 2"])
+        page = st.sidebar.radio("Select a page", ["Home", "Add Transaction", "Page 2","View Transactions"])
         if page == "Home":
             st.title("Home")
             st.write("This is the home page.")
 
         elif page == "Add Transaction":
             st.title("Add Transaction")
-            functions.add_transaction()
+            functions.add_transaction(st.session_state.username)
 
         elif page == "Page 2":
             st.title("Page 2")
             categories.main()
+
+        elif page == "View Transactions":
+            st.title("View Transactions")
+            view_delete.view_transactions(st.session_state.username)
 
 #--------------------------------APP CONTENT END-----------------------------
 

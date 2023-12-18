@@ -26,7 +26,7 @@ def generate_unique_transaction_id(cursor):
             return transaction_id
         
 
-def add_transaction():
+def add_transaction(username):
     # Connect to the database
     conn = sqlite3.connect("expense_db.db")
     cursor = conn.cursor()
@@ -44,12 +44,14 @@ def add_transaction():
         submit_button = st.form_submit_button("Add Transaction")
 
         if submit_button:
-            cursor.execute("INSERT INTO expenses (transaction_id, amount, date, reason, category, label) VALUES (?, ?, ?, ?, ?, ?)",
-                           (transaction_id, amount, date, reason, category, label))
+            # Include the username when inserting into the expenses table
+            cursor.execute("INSERT INTO expenses (transaction_id, username, amount, date, reason, category, label) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                           (transaction_id, username, amount, date, reason, category, label))
             conn.commit()
             st.success("Transaction added successfully!")
 
     # Close the database connection
     conn.close()
+
 
 # Call the function to run the app
