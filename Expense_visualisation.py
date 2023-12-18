@@ -20,10 +20,12 @@ conn.close()
 st.dataframe(df)
 
 #Pie-chart
+category = df['category']
+amount = df['amount']
 pie_chart = px.pie(df_category,
                    title='Distribution of amount spent on various categories',
-                   values='category',
-                   names='category')
+                   values=amount,
+                   names=category)
 
 st.plotly_chart(pie_chart)
 
@@ -33,6 +35,11 @@ reasons = df['reason'].unique().tolist()
 
 category_selection = st.multiselect('Category:',categories)
 reason_selection = st.multiselect('Reason:', reasons)
+
+#Date selection
+df['date'] = pd.to_datetime(df['date'])
+df['date'] = df['date'].astype('datetime64[s]').view('int64') 
+df['date'] = df['date'].astype(float)
 
 date_selection = st.slider('Select start date', min_value=df['date'].min(), max_value=df['date'].max())
 
