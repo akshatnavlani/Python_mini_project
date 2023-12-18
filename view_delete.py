@@ -1,6 +1,3 @@
-import sqlite3
-import streamlit as st
-import pandas as pd
 
 import sqlite3
 import streamlit as st
@@ -45,5 +42,5 @@ def delete_transaction(conn, transaction_id):
     st.success(f"Transaction {transaction_id} deleted successfully.")
 
 # Assuming you have the current username stored in st.session_state.username
+    
 view_transactions(st.session_state.username)
-

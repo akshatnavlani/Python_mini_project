@@ -98,11 +98,9 @@ if st.session_state.username and not st.session_state.show_signup:
         elif page == "Page 2":
             st.title("Page 2")
             categories.main()
-
         elif page == "View Transactions":
             st.title("View Transactions")
             view_delete.view_transactions(st.session_state.username)
-
 #--------------------------------APP CONTENT END-----------------------------
 
 

@@ -54,4 +54,5 @@ def add_transaction(username):
     conn.close()
 
 
+
 # Call the function to run the app
