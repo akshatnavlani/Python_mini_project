@@ -3,6 +3,12 @@ import sqlite3
 import streamlit as st
 import pandas as pd
 
+# Initialize session state
+if 'username' not in st.session_state:
+    st.session_state.username = None  # Set a default value or initialize it based on your application logic
+
+
+
 def view_transactions(username):
 
     conn = sqlite3.connect("expense_db.db")
