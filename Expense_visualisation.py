@@ -1,13 +1,14 @@
 import pandas as pd
 import streamlit as st
 import plotly.express as px
-from PIL import Image
+import datetime
+from datetime import datetime
 import sqlite3
 
 #Reading the data
-st.set_page_config(page_title="Bar Graph")
-st.header("Bar Graph of expenses")
-
+st.set_page_config(page_title="Statistics")
+st.header("Statistics")
+st.write("Dataframe")
 conn = sqlite3.connect('expenses.db')
 
 query1 = "SELECT * FROM expenses"
@@ -15,6 +16,10 @@ df = pd.read_sql(query1, conn)
 
 query2 = "SELECT category FROM expenses"
 df_category = pd.read_sql(query2,conn)
+
+query3 = "SELECT label FROM expenses"
+df_label = pd.read_sql(query3,conn)
+
 
 conn.close()
 st.dataframe(df)
@@ -25,37 +30,27 @@ amount = df['amount']
 pie_chart = px.pie(df_category,
                    title='Distribution of amount spent on various categories',
                    values=amount,
-                   names=category)
+                   names=category,
+                   color='category', 
+                   color_discrete_map={row['category']: row['color'] for index, row in df.iterrows()})
 
 st.plotly_chart(pie_chart)
 
-#Filters and selection
-categories = df['category'].unique().tolist()
-reasons = df['reason'].unique().tolist()
-
-category_selection = st.multiselect('Category:',categories)
-
 #Date selection
+dates = df['date'].unique().tolist()
+
 df['date'] = pd.to_datetime(df['date'])
-df['date'] = df['date'].astype('datetime64[s]').view('int64') 
-df['date'] = df['date'].astype(float)
 
-date_selection = st.slider('Select start date', min_value=df['date'].min(), max_value=df['date'].max())
+start_date = st.selectbox('Start date:',dates)
+end_date = st.selectbox('End date:',dates)
 
-mask = (df['date'].between(*date_selection)) & (df['category'].isin(category_selection)) 
-result_amount = df[mask].shape[0]
-st.markdown(f'*Available results: {result_amount}*')
+filtered_df = df[(df['date'] >= start_date) & (df['date'] <= end_date)]
 
-#Grouping the dataframe
-df_amount_grouped = df[mask].groupby(by=['amount'])
+#Bar chart
+st.header("Bar chart of expenses with time")
 
-#Bar charts
-amount_bar_chart = px.bar(df_amount_grouped,
-                          x='date',
-                          y='amount',
-                          text='Expense vs Time',
-                          color_discrete_sequence=['#08653f'],
-                          template='plotly_white')
-
-
-
+grouped_counts = df.groupby(['amount', 'label']).size().unstack(fill_value=0).stack()
+columns_required = ['date','amount']
+df2 = filtered_df[columns_required].copy()
+df2_upd=df2.set_index("date")
+st.bar_chart(df2_upd)
