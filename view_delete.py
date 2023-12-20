@@ -16,6 +16,7 @@ def view_transactions(username):
     transactions_query = f"SELECT transaction_id, amount, date, reason, category, label FROM expenses WHERE username = '{username}'"
     transactions = pd.read_sql_query(transactions_query, conn)
 
+    st.title("Your Transactions")
 
     if not transactions.empty:
         table_container = st.empty()
