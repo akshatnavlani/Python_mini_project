@@ -1,7 +1,7 @@
 import streamlit as st
 import sqlite3
 from passlib.hash import pbkdf2_sha256
-import functions
+import add_transactions
 import categories
 import view_delete
 # Create a connection to the SQLite database
@@ -73,30 +73,29 @@ if st.session_state.username and st.session_state.show_signup:
 
 # Display the main app content after successful login
 if st.session_state.username and not st.session_state.show_signup:
-    st.title("Main App")
     # Fetch the user from the database based on the logged-in username
     cursor.execute("SELECT * FROM users WHERE username=?", (st.session_state.username,))
     user = cursor.fetchone()
     if user:
 # Sidebar
-        st.sidebar.title("Streamlit Auth Demo")
+        st.sidebar.title("Expense Tracker")
         st.sidebar.write(f"Welcome, {user[1]}!")
         st.sidebar.button("Logout", on_click=lambda: setattr(st.session_state, "username", None))
         # Your existing app content goes here
 
 
 #--------------------------------APP CONTENT------------------------------------
-        page = st.sidebar.radio("Select a page", ["Home", "Add Transaction", "Page 2","View Transactions"])
+        page = st.sidebar.radio("Select a page", ["Home", "Add Transaction", "Manage Categories","View Transactions"])
         if page == "Home":
             st.title("Home")
             st.write("This is the home page.")
 
         elif page == "Add Transaction":
             st.title("Add Transaction")
-            functions.add_transaction(st.session_state.username)
+            add_transactions.add_transaction(st.session_state.username)
 
-        elif page == "Page 2":
-            st.title("Page 2")
+        elif page == "Manage Categories":
+            st.title("Manage Categories")
             categories.main()
         elif page == "View Transactions":
             st.title("View Transactions")

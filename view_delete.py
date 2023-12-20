@@ -16,7 +16,7 @@ def view_transactions(username):
     transactions_query = f"SELECT transaction_id, amount, date, reason, category, label FROM expenses WHERE username = '{username}'"
     transactions = pd.read_sql_query(transactions_query, conn)
 
-    st.title("Your Transactions")
+    
 
     if not transactions.empty:
         table_container = st.empty()
@@ -37,8 +37,7 @@ def view_transactions(username):
         updated_transactions_display = updated_transactions[['transaction_id', 'amount', 'date', 'reason', 'category', 'label']].reset_index(drop=True)
         table_container.dataframe(updated_transactions_display, use_container_width=True)
 
-    else:
-        st.warning("No transactions found for your account.")
+    
 
     conn.close()
 
