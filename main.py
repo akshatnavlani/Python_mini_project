@@ -4,6 +4,7 @@ from passlib.hash import pbkdf2_sha256
 import add_transactions
 import categories
 import view_delete
+import Expense_visualisation
 # Create a connection to the SQLite database
 conn = sqlite3.connect("expense_db.db")
 cursor = conn.cursor()
@@ -86,7 +87,7 @@ if st.session_state.username and not st.session_state.show_signup:
 
 
 #--------------------------------APP CONTENT------------------------------------
-        page = st.sidebar.radio("Select a page", ["Home", "Add Transaction", "Manage Categories","View Transactions"])
+        page = st.sidebar.radio("Select a page", ["Home", "Add Transaction", "Manage Categories","View Transactions","Statistics"])
         if page == "Home":
             st.title("Home")
             st.write("This is the home page.")
@@ -101,6 +102,10 @@ if st.session_state.username and not st.session_state.show_signup:
         elif page == "View Transactions":
             st.title("View Transactions")
             view_delete.view_transactions(st.session_state.username)
+        
+        elif page == "Statistics":
+            st.title("Statistics")
+            Expense_visualisation.page(st.session_state.username)
 #--------------------------------APP CONTENT END-----------------------------
 
 
