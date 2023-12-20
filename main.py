@@ -3,6 +3,7 @@ import sqlite3
 from passlib.hash import pbkdf2_sha256
 import functions
 import categories
+
 # Create a connection to the SQLite database
 conn = sqlite3.connect("expense_db.db")
 cursor = conn.cursor()
@@ -12,7 +13,9 @@ cursor.execute('''
     CREATE TABLE IF NOT EXISTS users (
         username TEXT PRIMARY KEY,
         name TEXT,
-        password TEXT
+        password TEXT,
+        wallet_amount REAL DEFAULT 0.0,
+        budget REAL DEFAULT 0.0
     )
 ''')
 conn.commit()
@@ -24,8 +27,6 @@ if "show_signup" not in st.session_state:
     st.session_state.show_signup = False
 if "signup_name" not in st.session_state:
     st.session_state.signup_name = None
-
-
 
 # Main content
 if not st.session_state.username:
@@ -56,34 +57,48 @@ if st.session_state.username and st.session_state.show_signup:
 
 # Display the main app content after successful login
 if st.session_state.username and not st.session_state.show_signup:
-    st.title("Main App")
+    st.title("Money Manager")
     # Fetch the user from the database based on the logged-in username
     cursor.execute("SELECT * FROM users WHERE username=?", (st.session_state.username,))
     user = cursor.fetchone()
     if user:
-# Sidebar
-        st.sidebar.title("Streamlit Auth Demo")
+        # Sidebar
         st.sidebar.write(f"Welcome, {user[1]}!")
         st.sidebar.button("Logout", on_click=lambda: setattr(st.session_state, "username", None))
-        # Your existing app content goes here
 
+        # Wallet and Budget
+        wallet_amount = st.sidebar.number_input("Current Wallet Amount", value=user[3])
+        budget = st.sidebar.number_input("Budget", value=user[4])
 
-#--------------------------------APP CONTENT------------------------------------
-        page = st.sidebar.radio("Select a page", ["Home", "Add Transaction", "Page 2"])
+        # --------------------------------APP CONTENT------------------------------------
+        page = st.sidebar.radio("Select a page", ["Home", "Add Transaction", "Categories", "Statistics"])
         if page == "Home":
             st.title("Home")
             st.write("This is the home page.")
+            
+            # Display Wallet Amount
+            wallet_amount_key= "wallet_amount_input" #unique key
+            wallet_amount = st.sidebar.number_input("Current Wallet Amount", value=user[3])
+            st.button("View Wallet Amount", on_click=lambda: st.success(f"Wallet Amount: {wallet_amount}"))
 
+            # Display Expenses
+            # Assuming you have a function to calculate expenses, replace it with the actual function
+            expenses_this_month = functions.calculate_expenses_this_month(st.session_state.user_id)
+            st.button("View Expenses", on_click=lambda: st.success(f"Expenses This Month: {expenses_this_month}"))
+
+        
         elif page == "Add Transaction":
             st.title("Add Transaction")
             functions.add_transaction()
 
-        elif page == "Page 2":
-            st.title("Page 2")
+        elif page == "Categories":
+            st.title("Categories")
             categories.main()
 
-#--------------------------------APP CONTENT END-----------------------------
-
+        elif page == "Statistics":
+            st.title("Statistics")
+            # Add your statistics content here
+        # --------------------------------APP CONTENT END-----------------------------
 
 # Display the signup form
 if st.session_state.show_signup:
@@ -110,3 +125,4 @@ if st.session_state.show_signup:
 
 # Close the database connection
 conn.close()
+

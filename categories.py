@@ -28,7 +28,6 @@ def display_categories(conn):
 
     st.header("Existing Categories")
 
-
     categories = cursor.execute("SELECT name, color FROM categories").fetchall()
     buttons_html = []
     for category, color in categories:
@@ -40,6 +39,7 @@ def display_categories(conn):
         buttons_html.append(button_html)
 
     st.markdown(" ".join(buttons_html), unsafe_allow_html=True)
+
 
 def delete_category(conn):
     cursor = conn.cursor()
