@@ -26,6 +26,7 @@ def generate_unique_transaction_id(cursor):
             return transaction_id
         
 
+
 def add_transaction(username):
     # Connect to the database
     conn = sqlite3.connect("expense_db.db")
@@ -39,14 +40,19 @@ def add_transaction(username):
         categories = cursor.execute("SELECT name FROM categories").fetchall()
         categories = [category[0] for category in categories]
         category = st.selectbox('Category', categories)
+
+        # Get the color associated with the selected category
+        color_query = "SELECT color FROM categories WHERE name = ?"
+        color = cursor.execute(color_query, (category,)).fetchone()[0]
+
         label = st.selectbox('Label', ['Required.', 'Could be prevented.', 'Not needed.'])
         
         submit_button = st.form_submit_button("Add Transaction")
 
         if submit_button:
             # Include the username when inserting into the expenses table
-            cursor.execute("INSERT INTO expenses (transaction_id, username, amount, date, reason, category, label) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                           (transaction_id, username, amount, date, reason, category, label))
+            cursor.execute("INSERT INTO expenses (transaction_id, username, amount, date, reason, category, color, label) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                           (transaction_id, username, amount, date, reason, category, color, label))
             conn.commit()
             st.success("Transaction added successfully!")
 

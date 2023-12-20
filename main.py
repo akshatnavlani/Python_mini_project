@@ -26,6 +26,7 @@ cursor.execute('''
         date TEXT,
         reason TEXT,
         category TEXT,
+        color TEXT,
         label TEXT,
         FOREIGN KEY (username) REFERENCES users(username)
     )
