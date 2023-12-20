@@ -36,18 +36,40 @@ def add_transaction(username):
         amount = st.number_input('Amount', value=0.0, step=10.0)
         date = st.date_input('Date', value=datetime.now())
         reason = st.text_input('Reason')
-        categories = cursor.execute("SELECT name FROM categories").fetchall()
-        categories = [category[0] for category in categories]
-        category = st.selectbox('Category', categories)
+        categories = cursor.execute("SELECT name FROM categories_{}".format(username)).fetchall()
+        existing_categories = [category[0].strip() for category in categories]
+        if not existing_categories:
+            st.warning("No categories found. Please add categories first.")
+            return
+        selected_category=st.selectbox("Select Category", existing_categories)
+        
+        wallets = cursor.execute("SELECT DISTINCT wallet_name FROM wallets WHERE username=?", (username,)).fetchall()
+        wallets = [wallet[0] for wallet in wallets]
+        selected_wallet = st.selectbox('Wallet', wallets)
+        
         label = st.selectbox('Label', ['Required.', 'Could be prevented.', 'Not needed.'])
+        
+        #New balance calculation
+        balance = cursor.execute("SELECT amount FROM wallets WHERE username=? AND wallet_name=?", (username, selected_wallet)).fetchone()
+        if balance:
+            balance = balance[0]
+        else:
+            st.error(f"Wallet '{selected_wallet}' not found.")
+            return
+    
+        updated_balance= balance-amount
         
         submit_button = st.form_submit_button("Add Transaction")
 
         if submit_button:
-            # Include the username when inserting into the expenses table
-            cursor.execute("INSERT INTO expenses (transaction_id, username, amount, date, reason, category, label) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                           (transaction_id, username, amount, date, reason, category, label))
+            # Include the username, wallet, and balance when inserting into the expenses table
+            cursor.execute("INSERT INTO expenses (transaction_id, username, amount, date, reason, category, label, balance) VALUES (?, ?, ?, ?, ?, ?, ?,?)",
+                           (transaction_id, username, amount, date, reason, selected_category, label, updated_balance))
+            
+            # Update the wallet balance in the wallets table
+            cursor.execute("UPDATE wallets SET amount=? WHERE username=? AND wallet_name=?", (updated_balance, username, selected_wallet))
             conn.commit()
+            
             st.success("Transaction added successfully!")
 
     # Close the database connection

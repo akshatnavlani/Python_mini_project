@@ -4,35 +4,60 @@ from passlib.hash import pbkdf2_sha256
 import add_transactions
 import categories
 import view_delete
+import pandas as pd
+import wallet_functions
+
 # Create a connection to the SQLite database
 conn = sqlite3.connect("expense_db.db")
-cursor = conn.cursor()
 
-# Create the users table if not exists
-cursor.execute('''
-    CREATE TABLE IF NOT EXISTS users (
-        username TEXT PRIMARY KEY,
-        name TEXT,
-        password TEXT
-    )
-''')
-conn.commit()
+# Use a context manager for database operations
+with conn:
+    # Create a cursor within the context manager
+    cursor = conn.cursor()
 
-cursor.execute('''
-    CREATE TABLE IF NOT EXISTS expenses (
-        transaction_id TEXT PRIMARY KEY,
-        username TEXT,
-        amount REAL,
-        date TEXT,
-        reason TEXT,
-        category TEXT,
-        label TEXT,
-        FOREIGN KEY (username) REFERENCES users(username)
-    )
-''')
+    # Create the users table if not exists
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            username TEXT PRIMARY KEY,
+            name TEXT,
+            password TEXT
+        )
+    ''')
 
+    # Create the expenses table if not exists
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS expenses (
+            transaction_id TEXT PRIMARY KEY,
+            username TEXT,
+            amount REAL,
+            date TEXT,
+            reason TEXT,
+            category TEXT,
+            label TEXT,
+            balance REAL -- Add the 'balance' column
+        )
+    ''')
 
-conn.commit()
+    # Create the categories table if not exists
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS categories (
+            name TEXT PRIMARY KEY,
+            color TEXT
+        )
+    ''')
+
+    # Create the wallets table if not exists
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS wallets (
+            wallet_id TEXT PRIMARY KEY,
+            username TEXT,
+            wallet_name TEXT,
+            amount REAL,
+            FOREIGN KEY (username) REFERENCES users(username)
+        )
+    ''')
+#conn.commit()
+
 
 # Initialize session_state
 if "username" not in st.session_state:
@@ -41,16 +66,15 @@ if "show_signup" not in st.session_state:
     st.session_state.show_signup = False
 if "signup_name" not in st.session_state:
     st.session_state.signup_name = None
-
-
+    
 
 # Main content
 if not st.session_state.username:
     st.title("Login")
 
     # Login form
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    username = st.text_input("Username",key="login_username")
+    password = st.text_input("Password", type="password", key="login_passsword")
 
     if st.button("Login"):
         # Check if the entered credentials are valid
@@ -77,19 +101,26 @@ if st.session_state.username and not st.session_state.show_signup:
     cursor.execute("SELECT * FROM users WHERE username=?", (st.session_state.username,))
     user = cursor.fetchone()
     if user:
-# Sidebar
+        # Sidebar
         st.sidebar.title("Expense Tracker")
         st.sidebar.write(f"Welcome, {user[1]}!")
         st.sidebar.button("Logout", on_click=lambda: setattr(st.session_state, "username", None))
         # Your existing app content goes here
 
-
 #--------------------------------APP CONTENT------------------------------------
-        page = st.sidebar.radio("Select a page", ["Home", "Add Transaction", "Manage Categories","View Transactions"])
+        page = st.sidebar.radio("Select a page", ["Home", "Add Transaction", "Manage Categories","View Transactions","Wallet"])
+        
         if page == "Home":
             st.title("Home")
-            st.write("This is the home page.")
-
+            
+            # Calculate and display total amount in wallet
+            total_wallet_amount = wallet_functions.calculate_total_wallet_amount(st.session_state.username, cursor)
+            st.info(f"Amount in Wallet: ₹{total_wallet_amount:.2f}")
+    
+            # Calculate and display total expenses this month
+            total_expenses_monthly = wallet_functions.calculate_total_expenses(st.session_state.username, "monthly", cursor)
+            st.info(f"Total Expenses This Month: ₹{total_expenses_monthly:.2f}")
+            
         elif page == "Add Transaction":
             st.title("Add Transaction")
             add_transactions.add_transaction(st.session_state.username)
@@ -97,9 +128,17 @@ if st.session_state.username and not st.session_state.show_signup:
         elif page == "Manage Categories":
             st.title("Manage Categories")
             categories.main()
+            
         elif page == "View Transactions":
             st.title("View Transactions")
             view_delete.view_transactions(st.session_state.username)
+            
+        elif page== "Wallet":
+            st.title("Wallet")
+            wallet_functions.display_wallet_table(st.session_state.username, conn)    
+            wallet_functions.add_wallet(conn)
+            wallet_functions.set_initial_wallet_amount(st.session_state.username, conn)
+            wallet_functions.delete_wallet(conn)
 #--------------------------------APP CONTENT END-----------------------------
 
 
