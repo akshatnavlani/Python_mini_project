@@ -7,6 +7,7 @@ import view_delete
 import pandas as pd
 import wallet_functions
 
+
 # Create a connection to the SQLite database
 conn = sqlite3.connect("expense_db.db")
 

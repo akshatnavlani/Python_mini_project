@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
 
+
 def add_wallet(conn):
     cursor = conn.cursor()
 

@@ -1,6 +1,7 @@
 import sqlite3
 import streamlit as st
 
+
 def add_category(conn, username):
     cursor = conn.cursor()
 

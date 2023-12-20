@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime
 from wallet_functions import calculate_total_expenses
 
+
 # Initialize session_state
 if 'username' not in st.session_state:
     st.session_state.username = None
