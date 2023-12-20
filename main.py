@@ -69,7 +69,7 @@ if st.session_state.username and not st.session_state.show_signup:
 
 
 #--------------------------------APP CONTENT------------------------------------
-        page = st.sidebar.radio("Select a page", ["Home", "Add Transaction", "Page 2"])
+        page = st.sidebar.radio("Select a page", ["Home", "Add Transaction", "Manage Categories","View Transactions"])
         if page == "Home":
             st.title("Home")
             st.write("This is the home page.")
