@@ -15,9 +15,11 @@ def view_transactions(username):
 
     transactions_query = f"SELECT transaction_id, amount, date, reason, category, label FROM expenses WHERE username = '{username}'"
 
+    months=["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    default_month = datetime.now().strftime("%B")
+    selected_month_name = st.selectbox("Select a month:", months, index=months.index(default_month))
+
     
-    selected_month_name = st.selectbox("Select Month", ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], key="monthly_dropdown")
-        
     # Check if a month is selected
     if selected_month_name:
         # Convert the month name to numeric representation
