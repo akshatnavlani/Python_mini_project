@@ -1,56 +1,76 @@
 import pandas as pd
 import streamlit as st
 import plotly.express as px
-import datetime
-from datetime import datetime
 import sqlite3
 
-#Reading the data
-st.set_page_config(page_title="Statistics")
-st.header("Statistics")
-st.write("Dataframe")
-conn = sqlite3.connect('expenses.db')
+def page(username):
+    st.header("Bar Graph of expenses")
 
-query1 = "SELECT * FROM expenses"
-df = pd.read_sql(query1, conn)
+    # Connect to the SQLite database
+    conn = sqlite3.connect('expense_db.db')
 
-query2 = "SELECT category FROM expenses"
-df_category = pd.read_sql(query2,conn)
+    # Read data from expenses table for the specific user
+    query1 = f"SELECT * FROM expenses WHERE username = '{username}'"
+    df = pd.read_sql(query1, conn, parse_dates=['date'])  # Ensure 'date' column is parsed as datetime
 
-query3 = "SELECT label FROM expenses"
-df_label = pd.read_sql(query3,conn)
+    if df.empty:
+        st.warning("No transactions available.")
+        return
 
+    # Read unique categories, colors, and sum of amounts for the specific user
+    query_colors = f"SELECT DISTINCT category, color, SUM(amount) as amount FROM expenses WHERE username = '{username}' GROUP BY category, color"
+    df_colors = pd.read_sql(query_colors, conn)
 
-conn.close()
-st.dataframe(df)
+    # Close the database connection
+    conn.close()
 
-#Pie-chart
-category = df['category']
-amount = df['amount']
-pie_chart = px.pie(df_category,
-                   title='Distribution of amount spent on various categories',
-                   values=amount,
-                   names=category,
-                   color='category', 
-                   color_discrete_map={row['category']: row['color'] for index, row in df.iterrows()})
+    # Pie-chart
+    pie_chart = px.pie(df_colors,
+                       title='Distribution of amount spent on various categories',
+                       values='amount',
+                       names='category',
+                       color='category',  # Specify the 'category' column for coloring
+                       color_discrete_map=dict(zip(df_colors['category'], df_colors['color'])))
 
-st.plotly_chart(pie_chart)
+    st.plotly_chart(pie_chart)
 
-#Date selection
-dates = df['date'].unique().tolist()
+    # Filters and selection
+    categories = df['category'].unique().tolist()
+    reasons = df['reason'].unique().tolist()
 
-df['date'] = pd.to_datetime(df['date'])
+    category_selection = st.multiselect('Category:', categories)
 
-start_date = st.selectbox('Start date:',dates)
-end_date = st.selectbox('End date:',dates)
+    # Date selection
+    min_date, max_date = df['date'].min(), df['date'].max()
 
-filtered_df = df[(df['date'] >= start_date) & (df['date'] <= end_date)]
+    if min_date == max_date:
+        st.warning("Only one day of transactions available.")
+        return
 
-#Bar chart
-st.header("Bar chart of expenses with time")
+    # Convert datetime64 to regular Python datetime
+    min_date, max_date = min_date.to_pydatetime(), max_date.to_pydatetime()
 
-grouped_counts = df.groupby(['amount', 'label']).size().unstack(fill_value=0).stack()
-columns_required = ['date','amount']
-df2 = filtered_df[columns_required].copy()
-df2_upd=df2.set_index("date")
-st.bar_chart(df2_upd)
+    # Unpack the tuple
+    date_selection = st.slider('Select start date', min_value=min_date, max_value=max_date, value=(min_date, max_date))
+
+    start_date, end_date = date_selection
+
+    mask = (df['date'].between(start_date, end_date)) & (df['category'].isin(category_selection))
+    result_amount = df[mask].shape[0]
+    st.markdown(f'*Available results: {result_amount}*')
+
+    # Bar charts
+    amount_bar_chart = px.bar(df[mask],
+                              x='date',
+                              y='amount',
+                              color='label',  # Use 'label' instead of 'category' for coloring
+                              text='amount',
+                              color_discrete_sequence=['#f2a90a', '#0af27e', '#e33939'],
+                              template='plotly_white')
+
+    st.plotly_chart(amount_bar_chart)
+
+if __name__ == "__main__":
+    # Check if a user is logged in before calling the page function
+    if st.session_state.username:
+        page(st.session_state.username)
